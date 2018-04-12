@@ -13,29 +13,55 @@
         android:layout_height="wrap_content"
         android:layout_margin="12dp"
         android:layout_weight="1"
-        android:contentDescription="TODO"
-        app:srcCompat="@drawable/ic_launcher_foreground" />
+        android:contentDescription="TODO" />
+
+    <TextView
+        android:id="@+id/textView_divide"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@color/colorPrimary"
+        android:text="TextView" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="6dp"
+        android:orientation="horizontal"
+        android:padding="2dp">
 
-        <Button
-            android:id="@+id/button_camera"
+        <ImageButton
+            android:id="@+id/imageButton_tools"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/tools"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/textView_plain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:layout_weight="1"
-            android:text="拍照" />
+            android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/button_select"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            android:layout_weight="1"
-            android:text="图库" />
+        <ImageButton
+            android:id="@+id/imageButton_select"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/album"
+            android:scaleType="fitCenter" />
+
+        <ImageButton
+            android:id="@+id/imageButton_camera"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/camera"
+            android:fadingEdge="horizontal"
+            android:scaleType="fitCenter" />
+
     </LinearLayout>
 
 </LinearLayout>

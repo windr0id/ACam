@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -36,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_PICK=3;
 
 
-    private Button b_camera;
-    private Button b_select;
+    private ImageButton b_camera;
+    private ImageButton b_select;
     private ImageView mImageView;
     private File photoFile;
 
@@ -55,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        b_camera = findViewById(R.id.button_camera);
-        b_select = findViewById(R.id.button_select);
+        b_camera = findViewById(R.id.imageButton_camera);
+        b_select = findViewById(R.id.imageButton_select);
         mImageView = findViewById(R.id.imageView);
 
         b_camera.setOnClickListener(new View.OnClickListener() {
