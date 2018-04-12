@@ -1,6 +1,5 @@
 package com.acam;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,16 +12,16 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -69,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
         b_tools = findViewById(R.id.imageButton_tools);
         mImageView = findViewById(R.id.imageView);
 
+
+
         b_camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         b_tools.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!checkImageExist()) return;
                 View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_tools, null, false);
                 PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
                 window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -121,6 +123,39 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_share:
+                if(!checkImageExist()) break;
+                Intent share_intent = new Intent();
+                share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
+                share_intent.setType("image/*");//设置分享内容的类型
+                share_intent.putExtra(Intent.EXTRA_SUBJECT, "from ACam");//添加分享内容标题
+                share_intent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(getApplicationContext(),"com.ACam.fileProvider", photoFile));//添加分享内容
+                //创建分享的Dialog
+                share_intent = Intent.createChooser(share_intent, "分享");
+                startActivity(share_intent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private boolean checkImageExist(){
+        if(mImageView.getDrawable() == null){
+            Toast.makeText(this, "还没有图片呢，快选一张吧", Toast.LENGTH_LONG).show();
+            return false;
+        }else{
+            return true;
+        }
     }
 
     //获得文件路径
