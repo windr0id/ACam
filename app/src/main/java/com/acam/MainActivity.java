@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -11,10 +13,15 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import java.io.File;
@@ -39,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageButton b_camera;
     private ImageButton b_select;
+    private ImageButton b_tools;
     private ImageView mImageView;
     private File photoFile;
 
@@ -58,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         b_camera = findViewById(R.id.imageButton_camera);
         b_select = findViewById(R.id.imageButton_select);
+        b_tools = findViewById(R.id.imageButton_tools);
         mImageView = findViewById(R.id.imageView);
 
         b_camera.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +85,34 @@ public class MainActivity extends AppCompatActivity {
                 Intent selectPictureIntent = new Intent(Intent.ACTION_PICK);
                 selectPictureIntent.setType("image/");
                 startActivityForResult(selectPictureIntent, REQUEST_IMAGE_PICK);
+            }
+        });
+        b_tools.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_tools, null, false);
+                PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+                window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+                window.setOutsideTouchable(true);
+                window.setTouchable(true);
+                window.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        WindowManager.LayoutParams lp=getWindow().getAttributes();
+                        lp.alpha = 1.0f;
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                        getWindow().setAttributes(lp);
+                    }
+                });
+
+                float scale=getBaseContext().getResources().getDisplayMetrics().density;
+                final int mImage_layout_margin = (int)(12*scale+0.5f);
+                window.showAsDropDown(mImageView, -mImage_layout_margin, -window.getContentView().getMeasuredHeight()+mImage_layout_margin);
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.alpha = 0.5f;
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                getWindow().setAttributes(lp);
             }
         });
         try {
