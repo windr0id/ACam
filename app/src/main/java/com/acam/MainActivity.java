@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -136,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.action_share:
                 if(!checkImageExist()) break;
+                storeFile();
                 Intent share_intent = new Intent();
                 share_intent.setAction(Intent.ACTION_SEND);//设置分享行为
                 share_intent.setType("image/*");//设置分享内容的类型
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkImageExist(){
         if(mImageView.getDrawable() == null){
-            Toast.makeText(this, "还没有图片呢，快选一张吧", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "还没有图片呢，快选一张吧", Toast.LENGTH_SHORT).show();
             return false;
         }else{
             return true;
@@ -201,6 +204,20 @@ public class MainActivity extends AppCompatActivity {
         return photoFile;
     }
 
+    private void storeFile(){
+        FileOutputStream outStream = null;
+        try {
+            outStream = new FileOutputStream(photoFile);
+            Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+            outStream.flush();
+            outStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
