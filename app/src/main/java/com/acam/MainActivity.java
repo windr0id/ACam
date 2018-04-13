@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -45,9 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_PICK=3;
 
 
-    private ImageButton b_camera;
-    private ImageButton b_select;
-    private ImageButton b_tools;
     private ImageView mImageView;
     private File photoFile;
 
@@ -65,12 +63,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        b_camera = findViewById(R.id.imageButton_camera);
-        b_select = findViewById(R.id.imageButton_select);
-        b_tools = findViewById(R.id.imageButton_tools);
+        ImageButton b_camera = findViewById(R.id.imageButton_camera);
+        ImageButton b_select = findViewById(R.id.imageButton_select);
+        ImageButton b_tools = findViewById(R.id.imageButton_tools);
         mImageView = findViewById(R.id.imageView);
-
-
 
         b_camera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,30 +89,7 @@ public class MainActivity extends AppCompatActivity {
         b_tools.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!checkImageExist()) return;
-                View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_tools, null, false);
-                PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
-                window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-                window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-                window.setOutsideTouchable(true);
-                window.setTouchable(true);
-                window.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                    @Override
-                    public void onDismiss() {
-                        WindowManager.LayoutParams lp=getWindow().getAttributes();
-                        lp.alpha = 1.0f;
-                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                        getWindow().setAttributes(lp);
-                    }
-                });
-
-                float scale=getBaseContext().getResources().getDisplayMetrics().density;
-                final int mImage_layout_margin = (int)(12*scale+0.5f);
-                window.showAsDropDown(mImageView, -mImage_layout_margin, -window.getContentView().getMeasuredHeight()+mImage_layout_margin);
-                WindowManager.LayoutParams lp = getWindow().getAttributes();
-                lp.alpha = 0.5f;
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                getWindow().setAttributes(lp);
+                showToolsWindow();
             }
         });
         try {
@@ -125,6 +98,44 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+    private void showToolsWindow(){
+        if(!checkImageExist()) return;
+        View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_tools, null, false);
+        final PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        window.setOutsideTouchable(true);
+        window.setTouchable(true);
+        window.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                WindowManager.LayoutParams lp=getWindow().getAttributes();
+                lp.alpha = 1.0f;
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                getWindow().setAttributes(lp);
+            }
+        });
+
+        float scale=getBaseContext().getResources().getDisplayMetrics().density;
+        final int mImage_layout_margin = (int)(12*scale+0.5f);
+        window.showAsDropDown(mImageView, -mImage_layout_margin, -window.getContentView().getMeasuredHeight()+mImage_layout_margin);
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.alpha = 0.5f;
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        getWindow().setAttributes(lp);
+
+        Button b_tools_1 = contentView.findViewById(R.id.button_tools_1);
+        b_tools_1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                getEdge(bitmap);
+                mImageView.setImageBitmap(bitmap);
+                window.dismiss();
+            }
+        });
     }
 
     @Override
@@ -278,5 +289,5 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
+    native void getEdge(Object bitmap);
 }
