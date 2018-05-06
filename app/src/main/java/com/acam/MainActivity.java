@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -24,6 +25,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -126,12 +129,20 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         getWindow().setAttributes(lp);
 
-        Button b_tools_1 = contentView.findViewById(R.id.button_tools_1);
-        b_tools_1.setOnClickListener(new View.OnClickListener() {
+        contentView.findViewById(R.id.button_tools_1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
                 getEdge(bitmap);
+                mImageView.setImageBitmap(bitmap);
+                window.dismiss();
+            }
+        });
+        contentView.findViewById(R.id.button_tools_2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                bitmap = stylizeImage(bitmap, 0);
                 mImageView.setImageBitmap(bitmap);
                 window.dismiss();
             }
@@ -285,9 +296,69 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private final float[] styleVals = new float[NUM_STYLES];
+    private int[] intValues;
+    private float[] floatValues;
+    private TensorFlowInferenceInterface inferenceInterface;
+    private static final String MODEL_FILE = "file:///android_asset/stylize_quantized.pb";
+    private static final String INPUT_NODE = "input";
+    private static final String STYLE_NODE = "style_num";
+    private static final String OUTPUT_NODE = "transformer/expand/conv3/conv/Sigmoid";
+    private static final int NUM_STYLES = 26;
+
+    private Bitmap stylizeImage(Bitmap bitmap, int style) {
+        int desiredSize = 1024;
+        intValues = new int[desiredSize * desiredSize];
+        floatValues = new float[desiredSize * desiredSize * 3];
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int newWidth = desiredSize;
+        int newHeight = desiredSize;
+        // 计算缩放比例
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // 取得想要缩放的matrix参数
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        // 得到新的图片
+        Bitmap croppedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
+        
+        croppedBitmap.getPixels(intValues, 0, croppedBitmap.getWidth(), 0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
+        for (int i = 0; i < intValues.length; ++i) {
+            final int val = intValues[i];
+            floatValues[i * 3] = ((val >> 16) & 0xFF) / 255.0f;
+            floatValues[i * 3 + 1] = ((val >> 8) & 0xFF) / 255.0f;
+            floatValues[i * 3 + 2] = (val & 0xFF) / 255.0f;
+        }
+
+        for(int i=0; i<NUM_STYLES; i++){
+            styleVals[i] = style == i ? 1.0f : 0.0f;
+        }
+        inferenceInterface = new TensorFlowInferenceInterface(getAssets(), MODEL_FILE);
+        // Copy the input data into TensorFlow.
+        inferenceInterface.feed(
+                INPUT_NODE, floatValues, 1, croppedBitmap.getWidth(), croppedBitmap.getHeight(), 3);
+        inferenceInterface.feed(STYLE_NODE, styleVals, NUM_STYLES);
+
+        final boolean isDebug = false;
+        inferenceInterface.run(new String[] {OUTPUT_NODE}, isDebug);
+        inferenceInterface.fetch(OUTPUT_NODE, floatValues);
+
+        for (int i = 0; i < intValues.length; ++i) {
+            intValues[i] =
+                    0xFF000000
+                            | (((int) (floatValues[i * 3] * 255)) << 16)
+                            | (((int) (floatValues[i * 3 + 1] * 255)) << 8)
+                            | ((int) (floatValues[i * 3 + 2] * 255));
+        }
+        croppedBitmap.setPixels(intValues, 0, croppedBitmap.getWidth(), 0, 0, croppedBitmap.getWidth(), croppedBitmap.getHeight());
+        return croppedBitmap;
+    }
+
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
     native void getEdge(Object bitmap);
+
 }

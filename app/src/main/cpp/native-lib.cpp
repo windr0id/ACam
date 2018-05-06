@@ -2,8 +2,14 @@
 #include <string>
 #include <android/bitmap.h>
 #include <opencv2/opencv.hpp>
-
+#include <opencv2/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/ml/ml.hpp>
+using namespace std;
 using namespace cv;
+
+Mat VS_Results(InputArray ipt, InputArray model, InputArray colormodel);
 
 extern "C" JNIEXPORT jstring
 JNICALL
@@ -14,18 +20,17 @@ Java_com_acam_MainActivity_stringFromJNI(
     return env->NewStringUTF(hello.c_str());
 }
 
+
 extern "C" JNIEXPORT void
 JNICALL
 Java_com_acam_MainActivity_getEdge
         (JNIEnv *env, jobject thizz, jobject bitmap) {
-
-    AndroidBitmapInfo info;
-    void *pixels;
-
     double threshold1 = 120;
     double threshold2 = 160;
     int apertureSize = 3;
 
+    AndroidBitmapInfo info;
+    void *pixels;
     CV_Assert(AndroidBitmap_getInfo(env, bitmap, &info) >= 0);
     CV_Assert(info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
               info.format == ANDROID_BITMAP_FORMAT_RGB_565);
@@ -46,3 +51,4 @@ Java_com_acam_MainActivity_getEdge
     }
     AndroidBitmap_unlockPixels(env, bitmap);
 }
+
