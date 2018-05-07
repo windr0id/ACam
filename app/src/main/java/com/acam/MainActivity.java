@@ -1,5 +1,6 @@
 package com.acam;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,11 +10,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +30,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import com.wang.avi.AVLoadingIndicatorView;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
@@ -48,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE_FULL = 2;
     private static final int REQUEST_IMAGE_PICK=3;
 
+    AVLoadingIndicatorView avi;
 
     private ImageView mImageView;
     private File photoFile;
@@ -93,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 showToolsWindow();
+                //showLoadingWindow();
             }
         });
         try {
@@ -101,12 +110,31 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+
     }
 
+    private final int MSG_IMAGE = 0;
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_IMAGE:
+                    Bitmap bitmap =  msg.getData().getParcelable("image");
+                    mImageView.setImageBitmap(bitmap);
+                    loadingWindow.dismiss();
+                    break;
+            }
+
+            return false;
+        }
+    });
+
+    private PopupWindow toolsWindow;
     private void showToolsWindow(){
         if(!checkImageExist()) return;
         View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_tools, null, false);
         final PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        toolsWindow = window;
         window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
         window.setOutsideTouchable(true);
@@ -135,18 +163,87 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
                 getEdge(bitmap);
                 mImageView.setImageBitmap(bitmap);
-                window.dismiss();
+                hideLoadingWindow();
             }
         });
-        contentView.findViewById(R.id.button_tools_2).setOnClickListener(new View.OnClickListener() {
+
+        contentView.findViewById(R.id.button_style_0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bitmap retBitmap = stylizeImage(bitmap, 0);
+                        Message msg = new Message();
+                        msg.what = MSG_IMAGE;
+                        Bundle bd = new Bundle();
+                        bd.putParcelable("image", retBitmap);
+                        msg.setData(bd);
+                        mHandler.sendMessage(msg);
+                    }
+                }).start();
+                hideToolsWindow();
+                showLoadingWindow();
+            }
+        });
+        contentView.findViewById(R.id.button_style_19).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-                bitmap = stylizeImage(bitmap, 0);
+                bitmap = stylizeImage(bitmap, 19);
                 mImageView.setImageBitmap(bitmap);
                 window.dismiss();
             }
         });
+        contentView.findViewById(R.id.button_style_24).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                bitmap = stylizeImage(bitmap, 24);
+                mImageView.setImageBitmap(bitmap);
+                window.dismiss();
+            }
+        });
+    }
+
+    private void hideToolsWindow(){
+        if(toolsWindow != null){
+            toolsWindow.dismiss();
+        }
+    }
+
+    private PopupWindow loadingWindow;
+    private boolean isLoading = false;
+
+    private void showLoadingWindow(){
+        isLoading = true;
+        View contentView= LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_loading, null, false);
+        contentView.setFocusable(true); // 这个很重要
+        contentView.setFocusableInTouchMode(true);
+        final PopupWindow window = new PopupWindow(contentView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, true);
+        loadingWindow = window;
+        window.getContentView().measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        window.setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+        window.setTouchable(false);
+        window.setFocusable(false);
+        window.getBackground().setAlpha(160);
+        window.showAtLocation(mImageView, Gravity.CENTER, 0, 0);
+        contentView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (isLoading && keyCode == KeyEvent.KEYCODE_BACK) {
+                    return true;
+                }
+                return false;
+            }
+        });
+    }
+    private void hideLoadingWindow(){
+        if(loadingWindow != null){
+            isLoading = false;
+            loadingWindow.dismiss();
+        }
     }
 
     @Override
