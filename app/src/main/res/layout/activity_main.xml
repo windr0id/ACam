@@ -40,12 +40,6 @@
             android:background="@drawable/tools"
             android:scaleType="fitCenter" />
 
-        <TextView
-            android:id="@+id/textView_plain"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
         <ImageButton
             android:id="@+id/imageButton_select"
             android:layout_width="48dp"
@@ -60,6 +54,21 @@
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:background="@drawable/camera"
+            android:fadingEdge="horizontal"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/textView_plain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/imageButton_ar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/video"
             android:fadingEdge="horizontal"
             android:scaleType="fitCenter" />
 

@@ -2,76 +2,35 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="12dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:padding="4dp"
+        android:text="艺术效果" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="4dp"
-            android:text="基础效果" />
-
-        <Button
-            android:id="@+id/button_tools_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="边缘检测" />
-
-        <Button
-            android:id="@+id/button_tools_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="效果2" />
-
-        <Button
-            android:id="@+id/button_tools_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="效果3" />
-
-    </LinearLayout>
-
-    <LinearLayout
+    <Button
+        android:id="@+id/button_style_19"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="星空" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:text="艺术效果" />
+    <Button
+        android:id="@+id/button_style_24"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="神奈川冲浪里" />
 
-        <Button
-            android:id="@+id/button_style_19"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="星空" />
-
-        <Button
-            android:id="@+id/button_style_24"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="神奈川冲浪里" />
-
-        <Button
-            android:id="@+id/button_style_0"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="空气、钢铁和水" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/button_style_0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="空气、钢铁和水" />
 
 </LinearLayout>

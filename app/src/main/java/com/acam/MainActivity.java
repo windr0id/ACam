@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
     static {
-        System.loadLibrary("native-lib");
+        //System.loadLibrary("EasyAR");
     }
 
     //requestCode
@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         ImageButton b_camera = findViewById(R.id.imageButton_camera);
         ImageButton b_select = findViewById(R.id.imageButton_select);
         ImageButton b_tools = findViewById(R.id.imageButton_tools);
+        ImageButton b_ar = findViewById(R.id.imageButton_ar);
         mImageView = findViewById(R.id.imageView);
 
         b_camera.setOnClickListener(new View.OnClickListener() {
@@ -102,6 +103,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 showToolsWindow();
                 //showLoadingWindow();
+            }
+        });
+        b_ar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, ArVideoActivity.class);
+                startActivity(i);
             }
         });
         try {
@@ -157,16 +165,6 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         getWindow().setAttributes(lp);
 
-        contentView.findViewById(R.id.button_tools_1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-                getEdge(bitmap);
-                mImageView.setImageBitmap(bitmap);
-                hideLoadingWindow();
-            }
-        });
-
         contentView.findViewById(R.id.button_style_0).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -190,19 +188,41 @@ public class MainActivity extends AppCompatActivity {
         contentView.findViewById(R.id.button_style_19).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-                bitmap = stylizeImage(bitmap, 19);
-                mImageView.setImageBitmap(bitmap);
-                window.dismiss();
+                final Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bitmap retBitmap = stylizeImage(bitmap, 19);
+                        Message msg = new Message();
+                        msg.what = MSG_IMAGE;
+                        Bundle bd = new Bundle();
+                        bd.putParcelable("image", retBitmap);
+                        msg.setData(bd);
+                        mHandler.sendMessage(msg);
+                    }
+                }).start();
+                hideToolsWindow();
+                showLoadingWindow();
             }
         });
         contentView.findViewById(R.id.button_style_24).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
-                bitmap = stylizeImage(bitmap, 24);
-                mImageView.setImageBitmap(bitmap);
-                window.dismiss();
+                final Bitmap bitmap = ((BitmapDrawable) mImageView.getDrawable()).getBitmap();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bitmap retBitmap = stylizeImage(bitmap, 24);
+                        Message msg = new Message();
+                        msg.what = MSG_IMAGE;
+                        Bundle bd = new Bundle();
+                        bd.putParcelable("image", retBitmap);
+                        msg.setData(bd);
+                        mHandler.sendMessage(msg);
+                    }
+                }).start();
+                hideToolsWindow();
+                showLoadingWindow();
             }
         });
     }
@@ -404,13 +424,22 @@ public class MainActivity extends AppCompatActivity {
     private static final int NUM_STYLES = 26;
 
     private Bitmap stylizeImage(Bitmap bitmap, int style) {
-        int desiredSize = 1024;
-        intValues = new int[desiredSize * desiredSize];
-        floatValues = new float[desiredSize * desiredSize * 3];
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-        int newWidth = desiredSize;
-        int newHeight = desiredSize;
+        int desiredSize = 1024;
+        int newWidth;
+        int newHeight;
+        if(width > height){
+            newWidth = desiredSize;
+            newHeight = (int)(desiredSize*1.0/width*height);
+        }else{
+            newWidth = (int)(desiredSize*1.0/height*width);
+            newHeight = desiredSize;
+        }
+        newWidth = desiredSize;
+        newHeight = desiredSize;
+        intValues = new int[newWidth * newHeight];
+        floatValues = new float[newWidth * newHeight * 3];
         // 计算缩放比例
         float scaleWidth = ((float) newWidth) / width;
         float scaleHeight = ((float) newHeight) / height;
@@ -456,6 +485,6 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    native void getEdge(Object bitmap);
+    //native void getEdge(Object bitmap);
 
 }
